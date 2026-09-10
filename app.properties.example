@@ -1,0 +1,11 @@
+server=127.0.0.1
+port=8080
+transport=rest
+scheme=http
+password=111
+useFiscal=false
+useSerial=false
+printerName=BIXOLON SRP-330
+prefix=666666
+pageWidth=80
+pageScale=0.8

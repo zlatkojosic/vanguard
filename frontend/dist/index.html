@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=480, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>N POS Z v16.2</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <header>
+      <div class="title" id="title">N POS Z v16.2</div>
+      <div class="msg" id="message"></div>
+      <button type="button" class="nav-btn" id="exit">Izlaz</button>
+    </header>
+    <div class="stripe" id="stripe"></div>
+    <main id="main"></main>
+    <div class="toast hidden" id="toast"></div>
+    <footer>
+      <button type="button" class="nav-btn" id="home">Početna</button>
+      <button type="button" class="nav-btn" id="back">Nazad</button>
+    </footer>
+  </div>
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <h3>Potvrda</h3>
+      <p id="modal-text"></p>
+      <div class="row">
+        <button type="button" id="modal-no">Ne</button>
+        <button type="button" class="primary" id="modal-yes">Da</button>
+      </div>
+    </div>
+  </div>
+  <div id="kb" class="kb hidden">
+    <input id="kb-display" readonly />
+    <div id="kb-keys"></div>
+    <div class="row">
+      <button type="button" id="kb-ok">OK</button>
+      <button type="button" id="kb-back">Nazad</button>
+      <button type="button" id="kb-one">&lt;</button>
+      <button type="button" id="kb-all">&lt;&lt;</button>
+    </div>
+  </div>
+  <div id="busy" class="busy hidden">Radim...</div>
+  <script src="main.js"></script>
+</body>
+</html>

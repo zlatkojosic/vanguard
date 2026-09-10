@@ -1,0 +1,14 @@
+image: golang:1.23-bookworm
+
+variables:
+  GOPROXY: https://proxy.golang.org,direct
+
+stages:
+  - test
+
+test:
+  stage: test
+  script:
+    - go test ./internal/...
+  only:
+    - main

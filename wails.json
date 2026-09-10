@@ -1,0 +1,23 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "vanguard",
+  "outputfilename": "NPOS",
+  "frontend:dir": "frontend",
+  "frontend:install": "",
+  "frontend:build": "",
+  "wailsjsdir": "./frontend",
+  "author": {
+    "name": "NTS"
+  },
+  "info": {
+    "companyName": "NTS",
+    "productName": "N POS Z v16.2",
+    "productVersion": "1.0.0",
+    "copyright": "Copyright NTS",
+    "comments": "N POS Z v16.2 kiosk"
+  },
+  "runNonNativeBuildHooks": true,
+  "postBuildHooks": {
+    "*/*": "go run ../../scripts/writesha.go ${bin}"
+  }
+}

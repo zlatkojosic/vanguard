@@ -1,0 +1,21 @@
+# OS / editor
+.DS_Store
+.idea
+*.iml
+.vscode
+.history
+.metals
+.bloop
+.bsp
+
+# Logs / locks
+*.log
+pos.log
+app.lock
+
+# Wails / Go
+build/bin
+frontend/wailsjs
+*.exe
+.tmpBin
+out/
