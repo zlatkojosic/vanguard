@@ -4,6 +4,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"nts/vanguard/internal/i18n"
 	"nts/vanguard/internal/operators"
@@ -14,6 +15,7 @@ func (s *Session) buildUI() UI {
 	sc := s.cur()
 	u := UI{
 		Title:    s.titleFor(sc.ID),
+		AppTitle: s.appTitle(),
 		Theme:    s.theme,
 		Accent:   AccentFor(s.theme),
 		Message:  s.message,
@@ -142,7 +144,7 @@ func applyScreen(u *UI, sc operators.Screen) {
 	if len(sc.Fields) > 0 {
 		u.Fields = make([]Field, len(sc.Fields))
 		for i, f := range sc.Fields {
-			u.Fields[i] = Field{Name: f.Name, Label: f.Label, Type: f.Type, Value: f.Value, Options: f.Options, Placeholder: f.Placeholder}
+			u.Fields[i] = Field{Name: f.Name, Label: f.Label, Type: f.Type, Value: f.Value, Options: f.Options, Placeholder: f.Placeholder, MaxLen: f.MaxLen, Numeric: f.Numeric}
 		}
 	}
 	if sc.Table != nil {
@@ -281,9 +283,9 @@ func (s *Session) uiReport(u *UI, sc screen) {
 		heads = []string{s.T("ui.col_service"), s.T("ui.col_count"), s.T("ui.col_amount")}
 	}
 	u.Fields = []Field{
-		{Name: "fd", Label: s.T("ui.date"), Type: "text", Placeholder: "ddMMyy", Value: s.form["fd"]},
-		{Name: "fromTime", Label: s.T("ui.from"), Type: "text", Value: valueOr(s.form["fromTime"], "0000")},
-		{Name: "toTime", Label: s.T("ui.to"), Type: "text", Value: valueOr(s.form["toTime"], "2359")},
+		{Name: "fd", Label: s.T("ui.date"), Type: "date", Value: dateToInput(valueOr(s.form["fd"], todayDDMMYY()))},
+		{Name: "fromTime", Label: s.T("ui.from"), Type: "time", Value: formatTime(valueOr(s.form["fromTime"], "0000"))},
+		{Name: "toTime", Label: s.T("ui.to"), Type: "time", Value: formatTime(valueOr(s.form["toTime"], "2359"))},
 	}
 	u.Table = &Table{Heads: heads, Rows: s.reportRows}
 	u.Summary = s.T("ui.tx_count", s.reportSum)
@@ -295,6 +297,21 @@ func (s *Session) uiReport(u *UI, sc screen) {
 func (s *Session) uiDeregister(u *UI) {
 	u.Kind = "form"
 	u.Fields = []Field{{Name: "admin", Label: s.T("ui.admin_pass"), Type: "password"}}
+}
+
+func (s *Session) appTitle() string {
+	return "N POS Z v" + s.Pref.GetString("appVer", Version)
+}
+
+func todayDDMMYY() string { return time.Now().Format("020106") }
+
+// dateToInput converts ddMMyy to the yyyy-MM-dd value of an HTML date input.
+func dateToInput(ddMMyy string) string {
+	t, err := time.Parse("020106", ddMMyy)
+	if err != nil {
+		return ""
+	}
+	return t.Format("2006-01-02")
 }
 
 func boolStr(v bool) string {

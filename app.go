@@ -29,7 +29,7 @@ func (a *App) startup(ctx context.Context) {
 	if err != nil {
 		_, _ = runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
 			Type:    runtime.ErrorDialog,
-			Title:   "N POS Z v16.2",
+			Title:   "N POS Z",
 			Message: err.Error(),
 		})
 		runtime.Quit(ctx)
@@ -46,7 +46,12 @@ func (a *App) startup(ctx context.Context) {
 	a.sess = pos.New(pref)
 	a.sess.LockDir = lockDir
 	a.sess.Quit = func() { runtime.Quit(ctx) }
+	title := ""
 	a.sess.OnUI = func(u pos.UI) {
+		if u.AppTitle != "" && u.AppTitle != title {
+			title = u.AppTitle
+			runtime.WindowSetTitle(ctx, title)
+		}
 		runtime.EventsEmit(ctx, "ui", u)
 	}
 	a.sess.Start()

@@ -1,6 +1,7 @@
 package print
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -17,19 +18,19 @@ import (
 )
 
 type Settings struct {
-	UseFiscal         string
-	UseSerial         string
-	FiscalType        string
-	SerialType        string
-	PrinterName       string
-	PrinterFolder     string
-	FileExt           string
-	ComPort           string
-	RowLen            int
-	LeftMargin        int
-	TopMargin         int
-	PageWidth         int
-	PageScale         float64
+	UseFiscal     string
+	UseSerial     string
+	FiscalType    string
+	SerialType    string
+	PrinterName   string
+	PrinterFolder string
+	FileExt       string
+	ComPort       string
+	RowLen        int
+	LeftMargin    int
+	TopMargin     int
+	PageWidth     int
+	PageScale     float64
 }
 
 type Job struct {
@@ -61,7 +62,13 @@ func (j *Job) Execute() error {
 	return writeOS(j)
 }
 
+// ErrNoPrinter is returned when no printer is configured; we never fall back to the OS default printer.
+var ErrNoPrinter = errors.New("printer not configured")
+
 func writeOS(j *Job) error {
+	if strings.TrimSpace(j.Settings.PrinterName) == "" {
+		return ErrNoPrinter
+	}
 	content := j.Rendered()
 	tmp, err := os.CreateTemp("", "vanguard-print-*.txt")
 	if err != nil {
@@ -75,19 +82,11 @@ func writeOS(j *Job) error {
 	tmp.Close()
 	switch runtime.GOOS {
 	case "darwin":
-		args := []string{tmp.Name()}
-		if j.Settings.PrinterName != "" {
-			args = []string{"-d", j.Settings.PrinterName, tmp.Name()}
-		}
-		return exec.Command("lpr", args...).Run()
+		return exec.Command("lpr", "-P", j.Settings.PrinterName, tmp.Name()).Run()
 	case "linux":
-		args := []string{tmp.Name()}
-		if j.Settings.PrinterName != "" {
-			args = []string{"-P", j.Settings.PrinterName, tmp.Name()}
-		}
-		return exec.Command("lp", args...).Run()
+		return exec.Command("lp", "-d", j.Settings.PrinterName, tmp.Name()).Run()
 	case "windows":
-		return exec.Command("notepad", "/p", tmp.Name()).Run()
+		return exec.Command("notepad", "/pt", tmp.Name(), j.Settings.PrinterName).Run()
 	default:
 		return fmt.Errorf("unsupported OS print: %s", runtime.GOOS)
 	}

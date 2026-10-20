@@ -35,6 +35,9 @@ type Flow struct {
 	HasCharge     bool
 	SuccessCharge string
 	Receipt       string
+	PhoneMax      int
+	StornoMax     int
+	IntAmount     bool
 }
 
 func (f Flow) Full() *print.Template {
@@ -61,7 +64,7 @@ type Operator struct {
 func Catalog() []Operator {
 	return []Operator{
 		{ID: "eronet", Title: "Eronet", Activity: "eronet.home", Tags: []string{"ero", "erot"}, Kind: KindHome,
-			Topup:   &Flow{Title: "Eronet TopUp", Service: "erot", Command: "rEt", Check: "crEt", Last: "sEt", Report: "rdEt", Charge: "cEt", Decimal: 0, Min: 1, Max: 50, OperatorName: "ERONET Topup", HasCharge: true, Receipt: "Eronet prepaid dopuna:"},
+			Topup:   &Flow{Title: "Eronet TopUp", Service: "erot", Command: "rEt", Check: "crEt", Last: "sEt", Report: "rdEt", Charge: "cEt", Decimal: 0, Min: 1, Max: 50, PhoneMax: 10, StornoMax: 14, IntAmount: true, OperatorName: "ERONET Topup", HasCharge: true, Receipt: "Eronet prepaid dopuna:"},
 			Voucher: &Flow{Title: "Eronet Voucher", Service: "ero", Command: "rE", Check: "crE", Last: "sEr", Report: "rdEr", Amounts: []int{2, 5, 10, 20, 50}, OperatorName: "ERONET Voucher", Receipt: "Eronet voucher:"},
 		},
 		{ID: "mtel", Title: "Mtel", Activity: "mtel.topup", Tags: []string{"mtel"}, Kind: KindTopup,

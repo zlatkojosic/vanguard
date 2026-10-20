@@ -2,6 +2,7 @@ package pos
 
 type UI struct {
 	Title    string            `json:"title"`
+	AppTitle string            `json:"appTitle,omitempty"`
 	Theme    string            `json:"theme"`
 	Accent   string            `json:"accent"`
 	Message  string            `json:"message"`
@@ -35,6 +36,8 @@ type Field struct {
 	Value       string   `json:"value"`
 	Options     []string `json:"options,omitempty"`
 	Placeholder string   `json:"placeholder,omitempty"`
+	MaxLen      int      `json:"maxLen,omitempty"`
+	Numeric     string   `json:"numeric,omitempty"`
 }
 
 type Table struct {

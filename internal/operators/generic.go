@@ -70,7 +70,7 @@ func flowScreen(id string, t Text) Screen {
 		return flowMenu(id, opID, f, t)
 	}
 	if isCharge {
-		return formScreen(Field{Name: "stid", Label: t("ui.txid"), Type: "text"})
+		return formScreen(Field{Name: "stid", Label: t("ui.txid"), Type: "text", MaxLen: f.StornoMax, Numeric: numericIf(f.StornoMax > 0, "int")})
 	}
 	if opID == "binbin" || strings.HasPrefix(id, "binbin") {
 		return binbinProducts()
@@ -82,10 +82,34 @@ func flowScreen(id string, t Text) Screen {
 		}
 		return s
 	}
+	amtNumeric := "decimal"
+	if f.IntAmount {
+		amtNumeric = "int"
+	}
 	return formScreen(
-		Field{Name: "phN", Label: t("ui.phone"), Type: "text"},
-		Field{Name: "amt", Label: t("ui.amount"), Type: "text"},
+		Field{Name: "phN", Label: t("ui.phone"), Type: "text", MaxLen: f.PhoneMax, Numeric: numericIf(f.PhoneMax > 0, "int")},
+		Field{Name: "amt", Label: t("ui.amount"), Type: "text", Numeric: amtNumeric},
 	)
+}
+
+func numericIf(ok bool, kind string) string {
+	if ok {
+		return kind
+	}
+	return ""
+}
+
+// validDigits reports whether s is non-empty, digits only and at most max long (max <= 0 means no limit).
+func validDigits(s string, max int) bool {
+	if s == "" || (max > 0 && len(s) > max) {
+		return false
+	}
+	for _, r := range s {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+	return true
 }
 
 func flowMenu(id, opID string, f *Flow, t Text) Screen {
@@ -121,7 +145,15 @@ func runTopup(id string, v map[string]string, rt Runtime) {
 		rt.Toast(rt.T("toast.enter_phone_amt"))
 		return
 	}
-	phone, amt := v["phN"], v["amt"]
+	phone, amt := strings.TrimSpace(v["phN"]), strings.TrimSpace(v["amt"])
+	if f.PhoneMax > 0 && !validDigits(phone, f.PhoneMax) {
+		rt.Toast(rt.T("toast.invalid_phone", f.PhoneMax))
+		return
+	}
+	if f.IntAmount && !validDigits(amt, 0) {
+		rt.Toast(rt.T("toast.invalid_amount"))
+		return
+	}
 	rt.Ask(confirmText(f, rt), func() {
 		if !rt.AllowBuy() {
 			return
@@ -197,6 +229,11 @@ func runCharge(id, stid string, rt Runtime) {
 	}
 	f, _, ok := FlowByRoute(id)
 	if !ok || f == nil {
+		return
+	}
+	stid = strings.TrimSpace(stid)
+	if f.StornoMax > 0 && !validDigits(stid, f.StornoMax) {
+		rt.Toast(rt.T("toast.invalid_stid", f.StornoMax))
 		return
 	}
 	h := rt.Socket().Put("com", f.Charge).Put("stid", stid).Put("rc", strconv.Itoa(rt.NextRC()))

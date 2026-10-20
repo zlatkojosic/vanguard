@@ -1,6 +1,7 @@
 package pos
 
 import (
+	"errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -516,6 +517,10 @@ func (s *Session) doPrint(params map[string]string, tmpl *print.Template, servic
 	job := &print.Job{Settings: s.printSettings(), Template: tmpl, Params: print.FromMap(params)}
 	go func() {
 		if err := job.Execute(); err != nil {
+			if errors.Is(err, print.ErrNoPrinter) {
+				s.showToast(s.T("toast.printer_missing"))
+				return
+			}
 			s.showToast(err.Error())
 		}
 	}()

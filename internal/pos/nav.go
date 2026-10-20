@@ -231,7 +231,7 @@ func (s *Session) doDeregister(pass string) {
 func (s *Session) reportShow() {
 	s.mu.Lock()
 	sc := s.cur()
-	fd := s.form["fd"]
+	fd := valueOr(s.form["fd"], todayDDMMYY())
 	from := valueOr(s.form["fromTime"], "0000")
 	to := valueOr(s.form["toTime"], "2359")
 	cmd := sc.Args["command"]

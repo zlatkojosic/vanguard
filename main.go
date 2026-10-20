@@ -24,7 +24,7 @@ func main() {
 	}
 	app := NewApp()
 	err := wails.Run(&options.App{
-		Title:         "N POS Z v16.2",
+		Title:         "N POS Z",
 		Width:         480,
 		Height:        560,
 		DisableResize: true,

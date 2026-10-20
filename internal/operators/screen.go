@@ -24,6 +24,8 @@ type Field struct {
 	Value       string   `json:"value"`
 	Options     []string `json:"options,omitempty"`
 	Placeholder string   `json:"placeholder,omitempty"`
+	MaxLen      int      `json:"maxLen,omitempty"`
+	Numeric     string   `json:"numeric,omitempty"`
 }
 
 type Table struct {

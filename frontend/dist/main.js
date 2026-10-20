@@ -1,7 +1,7 @@
 const go = () => window.go.main.App;
 const runtime = () => window.runtime;
 
-let ui = { kind: "tabs", title: "N POS Z v16.2", items: [], fields: [], theme: "theme3.css", accent: "#ff0000" };
+let ui = { kind: "tabs", title: "N POS Z", items: [], fields: [], theme: "theme3.css", accent: "#ff0000" };
 let kbTarget = null;
 
 function call(name, ...args) {
@@ -15,9 +15,32 @@ function collectForm() {
   document.querySelectorAll("[data-field]").forEach((el) => {
     const name = el.getAttribute("data-field");
     if (el.type === "checkbox") out[name] = el.checked ? "true" : "false";
+    else if (el.type === "date") out[name] = dateToProto(el.value);
+    else if (el.type === "time") out[name] = (el.value || "").replace(":", "");
     else out[name] = el.value || "";
   });
   return out;
+}
+
+// yyyy-MM-dd (HTML date input) -> ddMMyy (protocol)
+function dateToProto(v) {
+  const m = /^\d{2}(\d{2})-(\d{2})-(\d{2})$/.exec(v || "");
+  return m ? m[3] + m[2] + m[1] : "";
+}
+
+// Keep numeric fields clean on every input event (typing, paste, on-screen keyboard).
+function sanitizeNumeric(el) {
+  const kind = el.getAttribute("data-numeric");
+  if (!kind) return;
+  let v = el.value;
+  if (kind === "decimal") {
+    v = v.replace(/,/g, ".").replace(/[^0-9.]/g, "").replace(/^(\d*\.\d*).*$/, (_, a) => a);
+  } else {
+    v = v.replace(/\D/g, "");
+  }
+  const max = parseInt(el.getAttribute("maxlength") || "0", 10);
+  if (max > 0) v = v.slice(0, max);
+  if (v !== el.value) el.value = v;
 }
 
 function grid(items, columns) {
@@ -39,9 +62,14 @@ function fieldsHTML(fields, keyboard) {
       const opts = (f.options || []).map((o) => `<option ${o === f.value ? "selected" : ""}>${esc(o)}</option>`).join("");
       return `<label>${esc(f.label)}</label><select data-field="${esc(f.name)}">${opts}</select>`;
     }
+    if (f.type === "date" || f.type === "time") {
+      return `<label>${esc(f.label)}</label><input type="${f.type}" data-field="${esc(f.name)}" value="${esc(f.value || "")}" ${f.type === "time" ? 'step="60"' : ""} />`;
+    }
     const t = f.type === "password" ? "password" : "text";
+    const num = f.numeric ? ` data-numeric="${esc(f.numeric)}" inputmode="${f.numeric === "int" ? "numeric" : "decimal"}"` : "";
+    const ml = f.maxLen ? ` maxlength="${f.maxLen}"` : "";
     const kb = keyboard ? `<button type="button" class="kb-open" data-for="${esc(f.name)}">⌨</button>` : "";
-    return `<label>${esc(f.label)}</label><div class="row" style="display:flex;gap:6px"><input type="${t}" data-field="${esc(f.name)}" value="${esc(f.value || "")}" placeholder="${esc(f.placeholder || "")}" />${kb}</div>`;
+    return `<label>${esc(f.label)}</label><div class="row" style="display:flex;gap:6px"><input type="${t}" data-field="${esc(f.name)}" value="${esc(f.value || "")}" placeholder="${esc(f.placeholder || "")}"${num}${ml} />${kb}</div>`;
   }).join("")}</div>`;
 }
 
@@ -56,7 +84,8 @@ function render(next) {
   document.documentElement.lang = ui.lang || "sr";
   document.documentElement.style.setProperty("--accent", ui.accent || "#ff0000");
   document.getElementById("stripe").style.background = ui.accent || "#ff0000";
-  document.getElementById("title").textContent = ui.title || "N POS Z v16.2";
+  document.getElementById("title").textContent = ui.title || ui.appTitle || "N POS Z";
+  if (ui.appTitle) document.title = ui.appTitle;
   document.getElementById("message").textContent = ui.message || "";
   const toast = document.getElementById("toast");
   toast.textContent = ui.toast || "";
@@ -168,6 +197,10 @@ document.getElementById("main").addEventListener("click", (e) => {
   if (kb) openKb(kb.getAttribute("data-for"));
 });
 
+document.addEventListener("input", (e) => {
+  if (e.target && e.target.matches && e.target.matches("[data-numeric]")) sanitizeNumeric(e.target);
+});
+
 document.addEventListener("keydown", (e) => {
   if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "SELECT")) {
     if (e.key === "Enter") {
@@ -219,7 +252,10 @@ document.getElementById("kb-keys").addEventListener("click", (e) => {
   if (d.value.length < 19) d.value += ch;
 });
 document.getElementById("kb-ok").onclick = () => {
-  if (kbTarget) kbTarget.value = document.getElementById("kb-display").value;
+  if (kbTarget) {
+    kbTarget.value = document.getElementById("kb-display").value;
+    sanitizeNumeric(kbTarget);
+  }
   document.getElementById("kb").classList.add("hidden");
 };
 document.getElementById("kb-back").onclick = () => document.getElementById("kb").classList.add("hidden");

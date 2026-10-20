@@ -11,10 +11,10 @@
   },
   "info": {
     "companyName": "NTS",
-    "productName": "N POS Z v16.2",
+    "productName": "N POS Z",
     "productVersion": "1.0.0",
     "copyright": "Copyright NTS",
-    "comments": "N POS Z v16.2 kiosk"
+    "comments": "N POS Z kiosk"
   },
   "runNonNativeBuildHooks": true,
   "postBuildHooks": {

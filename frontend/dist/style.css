@@ -129,7 +129,7 @@ footer {
   margin: 10px 0 4px;
   font-size: 13px;
 }
-.form input, .form select {
+.form input:not([type="checkbox"]), .form select {
   width: 100%;
   padding: 8px;
   border: 1px solid #ccc;
@@ -141,6 +141,13 @@ footer {
   align-items: center;
   gap: 8px;
   margin: 12px 0;
+}
+.form .check input {
+  width: auto;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  flex-shrink: 0;
 }
 .okbar {
   display: flex;
